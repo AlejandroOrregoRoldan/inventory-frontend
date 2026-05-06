@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import './config/axios.js'
 import './index.css'
 import App from './App.jsx'
 
