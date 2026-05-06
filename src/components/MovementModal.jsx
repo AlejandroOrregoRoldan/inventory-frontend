@@ -2,7 +2,8 @@ import { useState } from 'react';
 import axios from 'axios';
 import { X, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 
-const API = 'http://localhost:8080/api';
+const API_MOVEMENTS = 'http://localhost:8082/api';
+const API_PRODUCTOS = 'http://localhost:8081/api';
 
 export default function MovementModal({ product, onClose, onDone }) {
   const isEntrada = product.tipo === 'ENTRADA';
@@ -13,13 +14,27 @@ export default function MovementModal({ product, onClose, onDone }) {
     e.preventDefault();
     if (cantidad < 1) return;
 
+    const qty = parseInt(cantidad, 10);
+    const nuevoStock = isEntrada
+      ? (product.stock ?? 0) + qty
+      : (product.stock ?? 0) - qty;
+
     try {
       setSaving(true);
-      await axios.post(`${API}/movimientos`, {
+
+      await axios.post(`${API_MOVEMENTS}/movimientos`, {
         productoId: product.id,
+        productoNombre: product.nombre,
         tipo: product.tipo,
-        cantidad: parseInt(cantidad, 10),
+        cantidad: qty,
       });
+
+      await axios.put(`${API_PRODUCTOS}/productos/${product.id}`, {
+        nombre: product.nombre,
+        precio: product.precio,
+        stock: nuevoStock,
+      });
+
       onDone();
     } catch {
       alert('Error al registrar el movimiento.');

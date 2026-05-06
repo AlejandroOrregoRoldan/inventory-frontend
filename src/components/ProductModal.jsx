@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X, Save } from 'lucide-react';
 
-const API = 'http://localhost:8080/api';
+const API_PRODUCTOS = 'http://localhost:8081/api';
 
 export default function ProductModal({ product, onClose, onSaved }) {
   const isEdit = !!product;
@@ -30,9 +30,9 @@ export default function ProductModal({ product, onClose, onSaved }) {
     try {
       setSaving(true);
       if (isEdit) {
-        await axios.put(`${API}/productos/${product.id}`, payload);
+        await axios.put(`${API_PRODUCTOS}/productos/${product.id}`, payload);
       } else {
-        await axios.post(`${API}/productos`, payload);
+        await axios.post(`${API_PRODUCTOS}/productos`, payload);
       }
       onSaved();
     } catch {

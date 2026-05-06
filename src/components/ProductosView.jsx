@@ -4,7 +4,7 @@ import { Search, Plus, Pencil, Trash2, ArrowDownCircle, ArrowUpCircle } from 'lu
 import ProductModal from './ProductModal';
 import MovementModal from './MovementModal';
 
-const API = 'http://localhost:8080/api';
+const API_PRODUCTOS = 'http://localhost:8081/api';
 
 export default function ProductosView() {
   const [products, setProducts] = useState([]);
@@ -22,7 +22,7 @@ export default function ProductosView() {
     try {
       setLoading(true);
       setError(null);
-      const res = await axios.get(`${API}/productos`);
+      const res = await axios.get(`${API_PRODUCTOS}/productos`);
       setProducts(res.data);
     } catch (err) {
       setError('No se pudieron cargar los productos. Verifica que el backend esté corriendo.');
@@ -36,7 +36,7 @@ export default function ProductosView() {
   const handleDelete = async (id) => {
     if (!confirm('¿Eliminar este producto?')) return;
     try {
-      await axios.delete(`${API}/productos/${id}`);
+      await axios.delete(`${API_PRODUCTOS}/productos/${id}`);
       fetchProducts();
     } catch {
       alert('Error al eliminar el producto.');

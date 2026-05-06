@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ArrowDownCircle, ArrowUpCircle, AlertCircle } from 'lucide-react';
 
-const API = 'http://localhost:8080/api';
+const API_MOVEMENTS = 'http://localhost:8082/api';
 
 export default function MovimientosView() {
   const [movements, setMovements] = useState([]);
@@ -13,7 +13,7 @@ export default function MovimientosView() {
     try {
       setLoading(true);
       setError(null);
-      const res = await axios.get(`${API}/movimientos`);
+      const res = await axios.get(`${API_MOVEMENTS}/movimientos`);
       setMovements(res.data);
     } catch (err) {
       if (err.response?.status === 404) {
@@ -66,7 +66,7 @@ export default function MovimientosView() {
                 <p className="text-slate-700 font-medium mb-1">Error de conexión</p>
                 <p className="text-sm text-slate-500">
                   No se pudo conectar con el servidor. Verifica que el backend esté corriendo en{' '}
-                  <code className="text-xs bg-slate-100 px-1 py-0.5 rounded">localhost:8080</code>.
+                  <code className="text-xs bg-slate-100 px-1 py-0.5 rounded">localhost:8082</code>.
                 </p>
                 <button
                   onClick={fetchMovements}
@@ -95,7 +95,7 @@ export default function MovimientosView() {
               {movements.map((m) => (
                 <tr key={m.id} className="hover:bg-slate-50/50 transition-colors">
                   <td className="px-6 py-3.5 font-medium text-slate-800">
-                    {m.producto?.nombre ?? `ID: ${m.productoId}`}
+                    {m.productoNombre ?? `ID: ${m.productoId}`}
                   </td>
                   <td className="px-6 py-3.5 text-center">
                     {m.tipo === 'ENTRADA' ? (
