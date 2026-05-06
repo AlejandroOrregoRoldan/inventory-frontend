@@ -1,10 +1,21 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Search, Plus, Pencil, Trash2, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
+import { jwtDecode } from 'jwt-decode';
 import ProductModal from './ProductModal';
 import MovementModal from './MovementModal';
 
 const API_PRODUCTOS = 'http://localhost:8081/api';
+
+function getRol() {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+    return jwtDecode(token).rol;
+  } catch {
+    return null;
+  }
+}
 
 export default function ProductosView() {
   const [products, setProducts] = useState([]);
@@ -18,6 +29,9 @@ export default function ProductosView() {
   const [showMovementModal, setShowMovementModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
+  const rol = getRol();
+  const isAdmin = rol === 'ADMIN';
+
   const fetchProducts = async () => {
     try {
       setLoading(true);
@@ -25,7 +39,13 @@ export default function ProductosView() {
       const res = await axios.get(`${API_PRODUCTOS}/productos`);
       setProducts(res.data);
     } catch (err) {
-      setError('No se pudieron cargar los productos. Verifica que el backend esté corriendo.');
+      if (err.response) {
+        if (err.response.status === 401) setError('Token inválido o expirado. Cierra sesión y vuelve a iniciar.');
+        else if (err.response.status === 403) setError('Acceso denegado. Se requiere rol ADMIN.');
+        else setError(`Error del servidor (${err.response.status}).`);
+      } else {
+        setError('No se pudo conectar a localhost:8081. ¿Está corriendo el product-service?');
+      }
     } finally {
       setLoading(false);
     }
@@ -83,13 +103,15 @@ export default function ProductosView() {
             {products.length} producto{products.length !== 1 ? 's' : ''} en inventario
           </p>
         </div>
-        <button
-          onClick={openCreate}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors shadow-sm"
-        >
-          <Plus size={18} />
-          Nuevo Producto
-        </button>
+        {isAdmin && (
+          <button
+            onClick={openCreate}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors shadow-sm"
+          >
+            <Plus size={18} />
+            Nuevo Producto
+          </button>
+        )}
       </div>
 
       <div className="relative">
@@ -169,20 +191,24 @@ export default function ProductosView() {
                       >
                         <ArrowUpCircle size={17} />
                       </button>
-                      <button
-                        onClick={() => openEdit(p)}
-                        title="Editar producto"
-                        className="p-1.5 rounded-md text-indigo-600 hover:bg-indigo-50 transition-colors"
-                      >
-                        <Pencil size={17} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(p.id)}
-                        title="Eliminar producto"
-                        className="p-1.5 rounded-md text-red-500 hover:bg-red-50 transition-colors"
-                      >
-                        <Trash2 size={17} />
-                      </button>
+                      {isAdmin && (
+                        <>
+                          <button
+                            onClick={() => openEdit(p)}
+                            title="Editar producto"
+                            className="p-1.5 rounded-md text-indigo-600 hover:bg-indigo-50 transition-colors"
+                          >
+                            <Pencil size={17} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(p.id)}
+                            title="Eliminar producto"
+                            className="p-1.5 rounded-md text-red-500 hover:bg-red-50 transition-colors"
+                          >
+                            <Trash2 size={17} />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>

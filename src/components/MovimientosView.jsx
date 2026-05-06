@@ -16,8 +16,10 @@ export default function MovimientosView() {
       const res = await axios.get(`${API_MOVEMENTS}/movimientos`);
       setMovements(res.data);
     } catch (err) {
-      if (err.response?.status === 404) {
-        setError('endpoint');
+      if (err.response) {
+        if (err.response.status === 401) setError('token');
+        else if (err.response.status === 404) setError('endpoint');
+        else setError(`server-${err.response.status}`);
       } else {
         setError('connection');
       }
@@ -53,20 +55,25 @@ export default function MovimientosView() {
             <AlertCircle size={40} className="mx-auto text-amber-400 mb-3" />
             {error === 'endpoint' ? (
               <>
-                <p className="text-slate-700 font-medium mb-1">
-                  Endpoint no disponible
-                </p>
+                <p className="text-slate-700 font-medium mb-1">Endpoint no disponible</p>
                 <p className="text-sm text-slate-500 max-w-md mx-auto">
                   El endpoint <code className="text-xs bg-slate-100 px-1 py-0.5 rounded">GET /api/movimientos</code>{' '}
-                  aún no está implementado en el backend. Esta vista se actualizará automáticamente cuando esté listo.
+                  aún no está implementado.
+                </p>
+              </>
+            ) : error === 'token' ? (
+              <>
+                <p className="text-slate-700 font-medium mb-1">Token inválido o expirado</p>
+                <p className="text-sm text-slate-500">
+                  Cierra sesión y vuelve a iniciar para obtener un token nuevo.
                 </p>
               </>
             ) : (
               <>
                 <p className="text-slate-700 font-medium mb-1">Error de conexión</p>
                 <p className="text-sm text-slate-500">
-                  No se pudo conectar con el servidor. Verifica que el backend esté corriendo en{' '}
-                  <code className="text-xs bg-slate-100 px-1 py-0.5 rounded">localhost:8082</code>.
+                  No se pudo conectar a <code className="text-xs bg-slate-100 px-1 py-0.5 rounded">localhost:8082</code>.
+                  ¿Está corriendo el movement-service?
                 </p>
                 <button
                   onClick={fetchMovements}
@@ -88,6 +95,7 @@ export default function MovimientosView() {
                 <th className="text-left px-6 py-3.5 font-medium text-slate-500">Producto</th>
                 <th className="text-center px-6 py-3.5 font-medium text-slate-500">Tipo</th>
                 <th className="text-center px-6 py-3.5 font-medium text-slate-500">Cantidad</th>
+                <th className="text-left px-6 py-3.5 font-medium text-slate-500">Usuario</th>
                 <th className="text-right px-6 py-3.5 font-medium text-slate-500">Fecha</th>
               </tr>
             </thead>
@@ -112,6 +120,9 @@ export default function MovimientosView() {
                   </td>
                   <td className="px-6 py-3.5 text-center text-slate-700">
                     {m.cantidad}
+                  </td>
+                  <td className="px-6 py-3.5 text-slate-700 text-xs font-medium">
+                    {m.usuario ?? '—'}
                   </td>
                   <td className="px-6 py-3.5 text-right text-slate-500 text-xs">
                     {formatDate(m.fecha)}

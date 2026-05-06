@@ -8,6 +8,7 @@ export default function LoginView({ onLogin }) {
   const [isRegister, setIsRegister] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [rol, setRol] = useState('USER');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -27,10 +28,10 @@ export default function LoginView({ onLogin }) {
     try {
       setLoading(true);
       const endpoint = isRegister ? '/register' : '/login';
-      const res = await axios.post(`${AUTH_API}${endpoint}`, {
-        username: username.trim(),
-        password,
-      });
+      const body = isRegister
+        ? { username: username.trim(), password, rol }
+        : { username: username.trim(), password };
+      const res = await axios.post(`${AUTH_API}${endpoint}`, body);
 
       if (isRegister) {
         setIsRegister(false);
@@ -99,6 +100,22 @@ export default function LoginView({ onLogin }) {
               placeholder="Tu contraseña"
             />
           </div>
+
+          {isRegister && (
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Rol
+              </label>
+              <select
+                value={rol}
+                onChange={(e) => setRol(e.target.value)}
+                className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 bg-white"
+              >
+                <option value="USER">Usuario</option>
+                <option value="ADMIN">Administrador</option>
+              </select>
+            </div>
+          )}
 
           <button
             type="submit"
